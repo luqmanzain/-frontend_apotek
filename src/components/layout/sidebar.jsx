@@ -1,7 +1,11 @@
 // Sidebar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaChevronRight,
+  FaBars,
+} from "react-icons/fa";
 import { FiLogOut } from "react-icons/fi";
 import { MdDashboard } from "react-icons/md";
 import { BsFillBellFill } from "react-icons/bs";
@@ -18,9 +22,9 @@ const sidebarMenus = [
 
 const Sidebar = ({ children, titlePage }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,24 +34,38 @@ const Sidebar = ({ children, titlePage }) => {
   }, [navigate]);
 
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) setIsOpen(true);
+    const checkScreen = () => {
+      if (window.innerWidth <= 768) {
+        setIsOpen(false);
+        setIsMobile(true);
+      } else {
+        setIsOpen(true);
+        setIsMobile(false);
+      }
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    window.addEventListener("resize", checkScreen);
+    checkScreen();
+    return () => window.removeEventListener("resize", checkScreen);
   }, []);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
 
+  const closeSidebarMobile = () => {
+    if (isMobile) setIsOpen(false);
+  };
+
   return (
     <div className="layout">
-      <aside className={`sidebar ${isOpen ? "open" : "closed"} ${isMobile ? "mobile" : ""}`}>
+      {isOpen && isMobile && <div className="sidebar-overlay" onClick={closeSidebarMobile} />}
+
+      <aside className={`sidebar ${isOpen ? "open" : "closed"}`}>
         <div className="sidebar-header">
           <span className="logo">{isOpen ? "Apotek Keluarga" : "AK"}</span>
           <button className="toggle-btn" onClick={toggleSidebar}>
@@ -60,8 +78,8 @@ const Sidebar = ({ children, titlePage }) => {
             <Link
               key={to}
               to={to}
+              onClick={closeSidebarMobile}
               className={`sidebar-link ${location.pathname === to ? "active" : ""}`}
-              onClick={() => isMobile && setIsOpen(false)}
             >
               <span className="icon">{icon}</span>
               {isOpen && <span className="label">{label}</span>}
@@ -79,6 +97,11 @@ const Sidebar = ({ children, titlePage }) => {
 
       <div className="main-content">
         <header className="main-header">
+          {isMobile && (
+            <button className="hamburger" onClick={toggleSidebar}>
+              <FaBars />
+            </button>
+          )}
           <h1 className="page-title">{titlePage}</h1>
           <Link to="/edit-profile" className="profile-link">
             <img
