@@ -1,3 +1,4 @@
+// Sidebar.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
@@ -17,20 +18,23 @@ const sidebarMenus = [
 
 const Sidebar = ({ children, titlePage }) => {
   const [isOpen, setIsOpen] = useState(true);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) navigate("/");
+    if (!token) {
+      navigate("/");
+    }
   }, [navigate]);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsOpen(window.innerWidth > 768);
+      setIsMobile(window.innerWidth <= 768);
+      if (window.innerWidth > 768) setIsOpen(true);
     };
     window.addEventListener("resize", handleResize);
-    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -43,7 +47,7 @@ const Sidebar = ({ children, titlePage }) => {
 
   return (
     <div className="layout">
-      <aside className={`sidebar ${isOpen ? "open" : "closed"}`}>
+      <aside className={`sidebar ${isOpen ? "open" : "closed"} ${isMobile ? "mobile" : ""}`}>
         <div className="sidebar-header">
           <span className="logo">{isOpen ? "Apotek Keluarga" : "AK"}</span>
           <button className="toggle-btn" onClick={toggleSidebar}>
@@ -57,6 +61,7 @@ const Sidebar = ({ children, titlePage }) => {
               key={to}
               to={to}
               className={`sidebar-link ${location.pathname === to ? "active" : ""}`}
+              onClick={() => isMobile && setIsOpen(false)}
             >
               <span className="icon">{icon}</span>
               {isOpen && <span className="label">{label}</span>}
