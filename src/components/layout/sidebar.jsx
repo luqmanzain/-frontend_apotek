@@ -20,27 +20,17 @@ const Sidebar = ({ children, titlePage }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // 🔒 Proteksi akses halaman: redirect ke login jika tidak ada token
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      navigate("/");
-    }
+    if (!token) navigate("/");
   }, [navigate]);
 
-  // Atur toggle sidebar responsif
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) {
-        setIsOpen(false);
-      } else {
-        setIsOpen(true);
-      }
+      setIsOpen(window.innerWidth > 768);
     };
-
     window.addEventListener("resize", handleResize);
-    handleResize(); // inisialisasi saat mount
-
+    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
@@ -53,7 +43,6 @@ const Sidebar = ({ children, titlePage }) => {
 
   return (
     <div className="layout">
-      {/* Sidebar */}
       <aside className={`sidebar ${isOpen ? "open" : "closed"}`}>
         <div className="sidebar-header">
           <span className="logo">{isOpen ? "Apotek Keluarga" : "AK"}</span>
@@ -83,7 +72,6 @@ const Sidebar = ({ children, titlePage }) => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="main-content">
         <header className="main-header">
           <h1 className="page-title">{titlePage}</h1>
