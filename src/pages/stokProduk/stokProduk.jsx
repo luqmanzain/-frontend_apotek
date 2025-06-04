@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/layout/sidebar";
+import Sidebar from "../../components/layout/Sidebar";
 import { useAppContext } from "../../context/AppContext";
 import StockTable from "../../components/stok/StockTable";
 import SearchBar from "../../components/stok/SearchBar";
@@ -32,15 +32,27 @@ const StokProduk = () => {
     stock.namaBarang.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleDelete = (id) => {
+    const confirmed = window.confirm("Apakah Anda yakin akan menghapus produk ini?");
+    if (confirmed) {
+      deleteStock(id);
+    }
+  };
+
   return (
     <Sidebar titlePage="Stock Produk">
       <div className="p-6 space-y-6">
-        <SearchBar value={searchTerm} onChange={handleSearch} />
-        <AddButton onClick={handleOpenAddModal} />
+        {/* Header Atas Table */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <SearchBar value={searchTerm} onChange={handleSearch} />
+          <AddButton onClick={handleOpenAddModal} />
+        </div>
+
+        {/* Tabel */}
         <StockTable
           stocks={filteredStocks}
           onEdit={handleOpenEditModal}
-          onDelete={deleteStock}
+          onDelete={handleDelete}
         />
       </div>
 

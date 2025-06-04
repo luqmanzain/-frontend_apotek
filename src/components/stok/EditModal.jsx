@@ -5,39 +5,35 @@ const EditModal = ({ isOpen, onClose, onSave, stock }) => {
   const [form, setForm] = useState({
     id: "",
     namaBarang: "",
-    stock: "",
     hargaBeli: "",
     hargaJual: "",
   });
 
   useEffect(() => {
     if (stock) {
-      setForm(stock);
+      setForm({
+        id: stock.id,
+        namaBarang: stock.namaBarang,
+        hargaBeli: stock.hargaBeli,
+        hargaJual: stock.hargaJual,
+      });
     }
   }, [stock]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Cegah pengurangan stok
-    if (name === "stock") {
-      const newValue = parseInt(value);
-      const oldValue = parseInt(stock.stock);
-      if (newValue < oldValue) return; // Tidak boleh kurang dari stok lama
-    }
-
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = () => {
-    if (!form.namaBarang || !form.stock || !form.hargaBeli || !form.hargaJual) {
+    if (!form.namaBarang || !form.hargaBeli || !form.hargaJual) {
       alert("Semua field harus diisi!");
       return;
     }
 
     onSave({
-      ...form,
-      stock: parseInt(form.stock),
+      ...stock,
+      namaBarang: form.namaBarang,
       hargaBeli: parseInt(form.hargaBeli),
       hargaJual: parseInt(form.hargaJual),
     });
@@ -50,7 +46,7 @@ const EditModal = ({ isOpen, onClose, onSave, stock }) => {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
       <div className="relative bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg">
         <button
-          onClick={onClose}  
+          onClick={onClose}
           className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl"
         >
           ✖
@@ -59,7 +55,7 @@ const EditModal = ({ isOpen, onClose, onSave, stock }) => {
         <h2 className="text-2xl font-bold mb-6 text-center">Edit Barang</h2>
 
         <div className="space-y-4">
-          {["namaBarang", "stock", "hargaBeli", "hargaJual"].map((field) => (
+          {["namaBarang", "hargaBeli", "hargaJual"].map((field) => (
             <input
               key={field}
               name={field}
@@ -68,14 +64,11 @@ const EditModal = ({ isOpen, onClose, onSave, stock }) => {
               placeholder={
                 field === "namaBarang"
                   ? "Nama Barang"
-                  : field === "stock"
-                  ? "Stok"
                   : field === "hargaBeli"
                   ? "Harga Beli"
                   : "Harga Jual"
               }
               type={field === "namaBarang" ? "text" : "number"}
-              min={field === "stock" ? stock?.stock || 0 : 0}
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           ))}

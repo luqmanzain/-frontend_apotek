@@ -23,6 +23,7 @@ export const AppProvider = ({ children }) => {
         stock: item.stok,
         hargaBeli: item.hargaBeli,
         hargaJual: item.hargaJual,
+        expDate: item.expDate?.split("T")[0], // Potong hanya ambil tanggal
       }));
       setStocks(data);
     } catch (error) {
@@ -48,27 +49,28 @@ export const AppProvider = ({ children }) => {
         stok: newStock.stock,
         hargaBeli: newStock.hargaBeli,
         hargaJual: newStock.hargaJual,
+        expDate: new Date(newStock.expDate), // pastikan ini bertipe Date atau string 'YYYY-MM-DD'
       });
-      fetchStocks();
+      await fetchStocks();
 
-      // Kirim laporan pengeluaran ke backend
       await api.post("/transaksi", {
         tanggal: new Date().toISOString().slice(0, 10),
         jenis: "Pengeluaran",
         total: newStock.hargaBeli * newStock.stock,
-        keterangan: `Pembelian ${newStock.namaBarang}`,
+        keterangan: `Pembelian ${newStock.namaBarang} sebanyak ${newStock.stock} buah`,
       });
 
-      fetchLaporan();
+      await fetchLaporan();
     } catch (error) {
-      console.error("Gagal menambah produk:", error);
-    }
+    // Lempar ke modal
+    throw error.response?.data?.message || "Gagal menyimpan produk.";
+  }
+    
   };
 
   // Update produk
   const updateStock = async (updatedStock) => {
     try {
-      // Ambil data stok lama terlebih dahulu
       const oldStock = stocks.find(item => item.id === updatedStock.id);
 
       await api.put(`/produk/${updatedStock.id}`, {
@@ -76,9 +78,9 @@ export const AppProvider = ({ children }) => {
         stok: updatedStock.stock,
         hargaBeli: updatedStock.hargaBeli,
         hargaJual: updatedStock.hargaJual,
+        expDate: new Date(updatedStock.expDate), // pastikan ini bertipe Date atau string 'YYYY-MM-DD'
       });
 
-      // Jika stok bertambah, catat ke laporan sebagai pengeluaran
       const penambahanStok = updatedStock.stock - oldStock.stock;
       if (penambahanStok > 0) {
         await api.post("/transaksi", {
@@ -91,7 +93,7 @@ export const AppProvider = ({ children }) => {
         await fetchLaporan();
       }
 
-      fetchStocks();
+      await fetchStocks();
     } catch (error) {
       console.error("Gagal update produk:", error);
     }
@@ -101,27 +103,24 @@ export const AppProvider = ({ children }) => {
   const deleteStock = async (id) => {
     try {
       await api.delete(`/produk/${id}`);
-      fetchStocks();
+      await fetchStocks();
     } catch (error) {
       console.error("Gagal menghapus produk:", error);
     }
   };
 
-  // Fungsi untuk melakukan penjualan
+  // Jual produk
   const sellProduct = async (items, nomorTransaksi, tanggalTransaksi, kasir = "Admin") => {
     try {
-      // Kurangi stok via backend
       await api.post("/produk/kurangi-stok", items.map(item => ({
         id: item.id,
         jumlah: item.jumlah
       })));
 
-      // Hitung total dan simpan ke state transaksi
       const total = items.reduce((sum, item) => sum + item.hargaJual * item.jumlah, 0);
       const transaksiBaru = { nomorTransaksi, tanggalTransaksi, kasir, items, total };
-      setTransaksi((prev) => [...prev, transaksiBaru]);
+      setTransaksi(prev => [...prev, transaksiBaru]);
 
-      // Kirim laporan pemasukan ke backend
       await api.post("/transaksi", {
         tanggal: tanggalTransaksi,
         jenis: "Pemasukan",
@@ -129,8 +128,8 @@ export const AppProvider = ({ children }) => {
         keterangan: `Penjualan ${items.map(item => item.namaBarang).join(", ")}`,
       });
 
-      fetchStocks();
-      fetchLaporan();
+      await fetchStocks();
+      await fetchLaporan();
     } catch (error) {
       console.error("Gagal melakukan transaksi penjualan:", error);
     }
@@ -141,10 +140,10 @@ export const AppProvider = ({ children }) => {
       stocks,
       transaksi,
       laporan,
-      addStock, // Tambah produk
-      updateStock, // Update produk (stok, harga)
-      deleteStock, // Hapus produk
-      sellProduct // Jual produk
+      addStock,
+      updateStock,
+      deleteStock,
+      sellProduct,
     }}>
       {children}
     </AppContext.Provider>

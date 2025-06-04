@@ -2,9 +2,9 @@ const AddButton = ({ onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="flex items-center px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition"
+      className="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-semibold shadow hover:bg-blue-700 transition duration-200"
     >
-      ➕ Tambah Barang
+      Tambah Barang
     </button>
   );
 };
