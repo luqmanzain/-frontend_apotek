@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Sidebar from "../../components/layout/Sidebar";
+import Sidebar from "../../components/layout/sidebar";
 import { useAppContext } from "../../context/AppContext";
 import StockTable from "../../components/stok/StockTable";
 import SearchBar from "../../components/stok/SearchBar";
